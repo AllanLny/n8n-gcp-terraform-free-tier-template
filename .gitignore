@@ -1,12 +1,15 @@
-# Node
+# Node.js
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Environnement
+# Environnements
 .env
 .env.*
+secrets.*
+*.pem
+*.key
 
 # VSCode
 .vscode/
@@ -16,17 +19,44 @@ yarn-error.log*
 Thumbs.db
 
 # Terraform
-terraform.tfstate
-terraform.tfstate.*
+*.tfstate
+*.tfstate.*
 terraform.tfvars
+terraform.tfvars.*
 .terraform/
 crash.log
-
-# Logs divers
 *.log
+*.backup
 
 # Docker
 *.pid
 
-# Secrets
-secrets.*
+# Logs
+*.log
+logs/
+*.out
+
+# Python (si jamais tu ajoutes des scripts)
+__pycache__/
+*.pyc
+
+# Mac/Linux swap files
+*.swp
+*.swo
+
+# Archives et backups
+*.zip
+*.tar.gz
+*.bak
+*.tmp
+
+# Autres fichiers sensibles ou temporaires
+*.crt
+*.csr
+
+# JetBrains IDEs
+.idea/
+
+# Test/coverage
+coverage/
+.nyc_output/

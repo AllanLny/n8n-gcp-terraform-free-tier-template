@@ -14,6 +14,9 @@ jobs:
       GOOGLE_CREDENTIALS: ${{ secrets.GCP_CREDENTIALS }}
       N8N_DOMAIN: ${{ secrets.N8N_DOMAIN }}
       N8N_SSL_EMAIL: ${{ secrets.N8N_SSL_EMAIL }}
+      GCP_REGION: ${{ vars.GCP_REGION }}
+      GCP_ZONE: ${{ vars.GCP_ZONE }}
+      GCP_PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
 
     defaults:
       run:
@@ -31,38 +34,55 @@ jobs:
       - name: Set up Google Cloud SDK
         uses: google-github-actions/setup-gcloud@v2
         with:
-          project_id: ${{ secrets.GCP_PROJECT_ID }}
+          project_id: ${{ env.GCP_PROJECT_ID }}
+          region: ${{ env.GCP_REGION }}
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
 
       - name: Terraform Init
         run: terraform init
+        timeout-minutes: 5
 
       - name: Import VM if exists
         run: |
-            set +e
-            ZONE=$(grep zone terraform.tfvars | cut -d'"' -f2)
-            gcloud compute instances describe n8n-vm --zone=$ZONE --project=${{ secrets.GCP_PROJECT_ID }}
-            if [ $? -eq 0 ]; then
-            terraform import google_compute_instance.n8n_vm "projects/${{ secrets.GCP_PROJECT_ID }}/zones/$ZONE/instances/n8n-vm" || true
-            fi
-            set -e
+          set +e
+          if [ -z "$GCP_PROJECT_ID" ] || [ -z "$GCP_ZONE" ]; then
+            echo "Error: Required environment variables are not set"
+            exit 1
+          fi
+          
+          if gcloud compute instances describe n8n-vm --zone="$GCP_ZONE" --project="$GCP_PROJECT_ID" --quiet 2>/dev/null; then
+            echo "VM exists, attempting to import..."
+            terraform import google_compute_instance.n8n_vm "projects/$GCP_PROJECT_ID/zones/$GCP_ZONE/instances/n8n-vm" || echo "Import failed but continuing..."
+          else
+            echo "VM does not exist, skipping import"
+          fi
+        timeout-minutes: 5
 
       - name: Import Firewall if exists
         run: |
           set +e
-          gcloud compute firewall-rules describe n8n-allow-http --project=${{ secrets.GCP_PROJECT_ID }}
-          if [ $? -eq 0 ]; then
-            terraform import google_compute_firewall.n8n_fw n8n-allow-http || true
+          if [ -z "$GCP_PROJECT_ID" ]; then
+            echo "Error: GCP_PROJECT_ID is not set"
+            exit 1
           fi
-          set -e
+          
+          if gcloud compute firewall-rules describe n8n-allow-http --project="$GCP_PROJECT_ID" --quiet 2>/dev/null; then
+            echo "Firewall rule exists, attempting to import..."
+            terraform import google_compute_firewall.n8n_fw n8n-allow-http || echo "Import failed but continuing..."
+          else
+            echo "Firewall rule does not exist, skipping import"
+          fi
+        timeout-minutes: 5
 
       - name: Terraform Validate
         run: terraform validate
 
       - name: Terraform Plan
         run: terraform plan -out=tfplan
+        timeout-minutes: 10
 
       - name: Terraform Apply
         run: terraform apply -auto-approve tfplan
+        timeout-minutes: 15
