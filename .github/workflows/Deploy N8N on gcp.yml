@@ -35,7 +35,12 @@ jobs:
         uses: google-github-actions/setup-gcloud@v2
         with:
           project_id: ${{ env.GCP_PROJECT_ID }}
-          region: ${{ env.GCP_REGION }}
+
+      - name: Configure gcloud CLI
+        run: |
+          gcloud config set project ${{ env.GCP_PROJECT_ID }}
+          gcloud config set compute/region ${{ env.GCP_REGION }}
+          gcloud config set compute/zone ${{ env.GCP_ZONE }}
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
@@ -80,9 +85,17 @@ jobs:
         run: terraform validate
 
       - name: Terraform Plan
-        run: terraform plan -out=tfplan
+        run: |
+          terraform plan \
+            -var="project_id=${{ env.GCP_PROJECT_ID }}" \
+            -var="n8n_domain=${{ env.N8N_DOMAIN }}" \
+            -var="n8n_ssl_email=${{ env.N8N_SSL_EMAIL }}" \
+            -var="region=${{ env.GCP_REGION }}" \
+            -var="zone=${{ env.GCP_ZONE }}" \
+            -out=tfplan
         timeout-minutes: 10
 
       - name: Terraform Apply
-        run: terraform apply -auto-approve tfplan
+        run: |
+          terraform apply -auto-approve tfplan
         timeout-minutes: 15
