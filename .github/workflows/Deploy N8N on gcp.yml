@@ -57,13 +57,16 @@ jobs:
             exit 1
           fi
           
+          terraform plan -var="project_id=$GCP_PROJECT_ID" -out=tfplan_import || true
+          
           if gcloud compute instances describe n8n-vm --zone="$GCP_ZONE" --project="$GCP_PROJECT_ID" --quiet 2>/dev/null; then
             echo "VM exists, attempting to import..."
-            terraform import google_compute_instance.n8n_vm "projects/$GCP_PROJECT_ID/zones/$GCP_ZONE/instances/n8n-vm" || echo "Import failed but continuing..."
+            terraform import -var="project_id=$GCP_PROJECT_ID" google_compute_instance.n8n_vm "projects/$GCP_PROJECT_ID/zones/$GCP_ZONE/instances/n8n-vm" || echo "Import failed but continuing..."
           else
             echo "VM does not exist, skipping import"
           fi
         timeout-minutes: 5
+
 
       - name: Import Firewall if exists
         run: |
