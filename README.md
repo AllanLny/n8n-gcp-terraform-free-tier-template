@@ -27,7 +27,7 @@
 ### 1. Fork & Clone the Repository
 
 ```bash
-git clone https://github.com/<your-username>/n8n-gcp-terraform-free-tier-template.git
+git clone https://github.com/AllanLny/n8n-gcp-terraform-free-tier-template.git
 cd n8n-gcp-terraform-free-tier-template/terraform
 ```
 

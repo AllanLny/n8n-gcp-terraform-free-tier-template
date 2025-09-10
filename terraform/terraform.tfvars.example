@@ -1,0 +1,7 @@
+project_id    = "your-gcp-project-id"
+region        = "europe-west1"
+zone          = "europe-west1-b"
+n8n_domain    = "n8n.yourdomain.com"
+n8n_ssl_email = "admin@yourdomain.com"
+
+
