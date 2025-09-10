@@ -76,9 +76,16 @@ jobs:
             exit 1
           fi
           
+          terraform plan -var="project_id=$GCP_PROJECT_ID" -out=tfplan_import || true
+          
           if gcloud compute firewall-rules describe n8n-allow-http --project="$GCP_PROJECT_ID" --quiet 2>/dev/null; then
             echo "Firewall rule exists, attempting to import..."
-            terraform import google_compute_firewall.n8n_fw n8n-allow-http || echo "Import failed but continuing..."
+            terraform import -var="project_id=$GCP_PROJECT_ID" \
+              -var="n8n_domain=$N8N_DOMAIN" \
+              -var="n8n_ssl_email=$N8N_SSL_EMAIL" \
+              -var="region=$GCP_REGION" \
+              -var="zone=$GCP_ZONE" \
+              google_compute_firewall.n8n_fw n8n-allow-http || echo "Import failed but continuing..."
           else
             echo "Firewall rule does not exist, skipping import"
           fi
