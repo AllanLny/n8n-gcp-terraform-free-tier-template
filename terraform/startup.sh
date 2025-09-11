@@ -63,16 +63,24 @@ fi
 echo "[startup] Configuration de Nginx comme reverse proxy pour n8n"
 cat >/etc/nginx/sites-available/n8n <<EOF
 server {
-    listen 80 default_server;
-    server_name $N8N_DOMAIN _;
+  listen 80 default_server;
+  server_name $N8N_DOMAIN _;
 
-    location / {
-        proxy_pass http://localhost:5678;
-        proxy_set_header Host \$host;
-        proxy_set_header X-Real-IP \$remote_addr;
-        proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto \$scheme;
-    }
+  location / {
+    proxy_pass http://localhost:5678;
+    proxy_set_header Host \$host;
+    proxy_set_header X-Real-IP \$remote_addr;
+    proxy_set_header X-Forwarded-For \$proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto \$scheme;
+    # Support WebSocket
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade \$http_upgrade;
+    proxy_set_header Connection "upgrade";
+    # Augmentation des timeouts pour workflows longs
+    proxy_read_timeout 600s;
+    proxy_connect_timeout 600s;
+    proxy_send_timeout 600s;
+  }
 }
 EOF
 
