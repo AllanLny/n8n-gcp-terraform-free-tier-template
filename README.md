@@ -62,8 +62,8 @@ Edit [`terraform/terraform.tfvars`](terraform/terraform.tfvars):
 
 ```hcl
 project_id    = "your-gcp-project-id"
-region        = "europe-west1"
-zone          = "europe-west1-b"
+region        = "us-central1"
+zone          = "us-central1-b"
 n8n_domain    = "your-domain.com"
 n8n_ssl_email = "your@email.com"
 ```
