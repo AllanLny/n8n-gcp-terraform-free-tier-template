@@ -18,13 +18,13 @@ provider "google" {
 resource "google_compute_instance" "n8n_vm" {
   depends_on   = [google_project_service.compute]
   name         = "n8n-vm"
-  machine_type = "e2-micro"
+  machine_type = "f1-micro"
   zone         = var.zone
 
   boot_disk {
     initialize_params {
       image = "ubuntu-os-cloud/ubuntu-2204-lts"
-      size  = 20
+  size  = 10
     }
   }
 
